@@ -1,0 +1,117 @@
+import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
+
+# Global Variables
+
+canvas_width = 300
+canvas_height = 300
+O,X = 0,0
+grid = [[" ", " ", " "], [" ", " ", " "], [" ", " ", " "]]
+turn = "X"
+won = False
+
+
+# Functions Part
+# Player Turn Switch Function
+
+def switch_turn():
+    global turn, info
+    if turn == "X":
+        turn = "O"
+    else:
+        turn = "X"
+    info.set_text("Player turn: " + turn)
+
+# Tie Function
+def Tie():
+    for a in range(0, 3):
+        for b in range(0, 3):
+            if grid[a][b] == " " :
+                return False
+    return True
+
+
+# Function to check the winner & returns 'True' if a player has won, false otherwise
+def check_win():
+    for a in range(0, 3):
+        if (grid[a][0] != " " and grid[a][0] == grid[a][1] == grid[a][2]) or (grid[0][a] != " " and grid[0][a] == grid[1][a] == grid[2][a]):
+            return True
+    if grid[0][0] == grid[1][1] == grid[2][2] and grid[0][0] != " ":
+        return True
+    elif grid[0][2] == grid[1][1] == grid[2][0] and grid[0][2] != " ":
+        return True
+    else:
+        return False
+
+
+# Drawing Canvas
+
+def draw(canvas):
+    # Draws the grid lines
+
+    canvas.draw_line([0, canvas_height // 3], [canvas_width, canvas_height // 3], 1, "Black")
+    canvas.draw_line([0, canvas_height // 3 * 2], [canvas_width, canvas_height // 3 * 2], 1, "Black")
+    canvas.draw_line([canvas_width // 3, 0], [canvas_width // 3, canvas_height], 1, "Black")
+    canvas.draw_line([canvas_width // 3 * 2, 0], [canvas_width // 3 * 2, canvas_height], 1, "Black")
+
+    # Draws the player choices using loops
+    for r in range(0, 3):
+        for c in range(0, 3):
+            canvas.draw_text(grid[r][c], [c * canvas_width // 3 + 20, r * canvas_height // 3 + 80], 80, "Red")
+
+
+# Click Fuction
+
+def click(pos):
+    global won, info, X, O
+    if not won:
+        # Checks to see if the click was on a grid line
+        if pos[0] % (canvas_width // 3) != 0 and pos[1] % (canvas_height // 3) != 0:
+            r = pos[1] // (canvas_height // 3)
+            c = pos[0] // (canvas_width // 3)
+            # Checks to see if a square is already taken
+            if grid[r][c] == " ":
+                grid[r][c] = turn
+                if check_win():
+                    won = True
+                    info.set_text("Player " + turn + " wins!")
+                    if turn == 'X':
+                        X += 1
+                        score_X.set_text("Player X : " + str(X))
+
+                    elif turn == 'O':
+                        O += 1
+                        score_O.set_text("Player O : " + str(O))
+
+                    New_Game(X, O)
+                elif Tie():
+                    New_Game(X,O)
+                else:
+                    switch_turn()
+
+
+
+# Function to reset the game
+def New_Game(x=0, o=0):
+    global grid, turn, won, info, X, O
+    grid = [[" ", " ", " "], [" ", " ", " "], [" ", " ", " "]]
+    turn = "X"
+    X=x
+    O=o
+    won = False
+    info.set_text("Player turn: " + turn)
+    score_X.set_text("Player X : " + str(X))
+    score_O.set_text("Player O : " + str(O))
+
+
+# Frame
+
+frame = simplegui.create_frame("Tic-Tac-Toe", canvas_width, canvas_height)
+frame.set_canvas_background("White")
+frame.set_draw_handler(draw)
+frame.set_mouseclick_handler(click)
+frame.add_button("New Game", New_Game)
+info = frame.add_label("Player turn: " + turn)
+frame.add_label("")
+score_X = frame.add_label("Player X : ", X)
+score_O = frame.add_label("Player O : ", O)
+frame.start()
